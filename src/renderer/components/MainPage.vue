@@ -20,20 +20,30 @@
       </div>
     </div>
     <div v-if="!!targetEntry" v-bind:class="{'fill-height v-box step-two':1,hidden:currentStep!=2}">
-      <div class="h-box flex-center-items padded-box main-header">
-        <div class="padded-box">
-          <button type="button" class="pure-button" v-on:click="didClickStepBack" title="Back">Back</button>
+      <div class="v-box main-header">
+        <div class="h-box flex-center-items padded-box">
+          <div v-if="showBack" class="padded-box">
+            <button type="button" class="pure-button" v-on:click="didClickStepBack" title="Back">Back</button>
+          </div>
+          <div class="h-box flex-center-items padded-box pure-form">
+            <input placeholder="Search Query" type="text" class="pure-input-rounded" v-model="searchQuery">
+            <label for="search-safe-checkbox" class="pure-checkbox padded-box">
+              <input id="search-safe-checkbox" type="checkbox" v-model="searchSafe"> Safe
+            </label>
+            <button type="button" class="pure-button button-primary" v-on:click="didClickSearch" title="Search">Search</button>
+          </div>
         </div>
-        <div class="h-box flex-center-items padded-box pure-form">
-          <input ref="filterQueryInput" placeholder="Filter" type="text" class="pure-input-rounded">
-          <button type="button" class="pure-button button-primary" v-on:click="didClickSearch" title="Search">Search</button>
-        </div>
-        <div class="flex-grow"></div>
-        <div class="paded-box">
-          {{targetEntry.dynamic_files.length - selectedImages.length}} file(s) remained
-        </div>
-        <div class="padded-box">
-          <button type="button" v-bind:class="{'pure-button button-primary':1,'l-disabled':selectedImages.length != targetEntry.dynamic_files.length}" v-on:click="didClickExport" title="Export">Export</button>
+        <div class="h-box flex-center-items padded-box">
+          <p>Select {{targetEntry.dynamic_files.length}} images and set Its order, Then hit export to generate a gridset.</p>
+          <div class="flex-grow"></div>
+          <!--
+          <div class="paded-box">
+            {{targetEntry.dynamic_files.length - selectedImages.length}} remained
+          </div>
+          -->
+          <div class="padded-box">
+            <button type="button" v-bind:class="{'pure-button button-primary':1,'l-disabled':selectedImages.length != targetEntry.dynamic_files.length}" v-on:click="didClickExport" title="Export">Export</button>
+          </div>
         </div>
       </div>
       <div class="flex-autoscroll" v-on:scroll="didScroll($event)">
@@ -58,21 +68,43 @@
   import GridSet from '../../GridSet'
   import { remote } from 'electron'
   import * as path from 'path'
+  import * as fs from 'fs'
 
   export default {
     name: 'main-page',
     props: [],
     data: () => ({
-      filterQuery: '',
+      searchQuery: '',
+      searchSafe: true,
       listEndIndicator: null,
       images: [],
       selectedImages: [],
       entries: [],
       targetEntry: null,
-      currentStep: 1,
+      currentStep: 0,
       _noMore: false,
       _loading: false,
+      showBack: false,
     }),
+    mounted () {
+      (async () => {
+        // load default gridwiz
+        this._gridset = new GridSet()
+        let fn = path.join(__static, 'GridWiz-Default.gridset')
+        await this._gridset.importFromFile(fn)
+        this.entries = this._gridset.entries
+        let entry = this.entries.find((a) => a.static_file == 'Grids\\cause1\\grid.xml')
+        if (entry != null) {
+          this.targetEntry = entry
+          this.currentStep = 2
+        } else {
+          this._gridset = null
+          this.entries = null
+          this.currentStep = 1
+          this.showBack = true
+        }
+      })()
+    },
     methods: {
       didScroll () {
         this._setNeedsLoadMoreIfAtBottom()
@@ -123,7 +155,6 @@
         return Promise.resolve()
       },
       didClickSearch () {
-        this.filterQuery = this.$refs.filterQueryInput.value
         this.images = [].concat(this.selectedImages)
         this._noMore = false
         this.loadMore()
@@ -207,7 +238,10 @@
         this._loading = true
         // load
         var images = await (new Promise((resolve, reject) => {
-          gis(this.filterQuery, (err, results) => {
+          gis({
+            searchTerm: this.searchQuery,
+            queryStringAddition: this.searchSafe ? '&safe=active' : '',
+          }, (err, results) => {
             if (err) {
               reject(err)
             } else {

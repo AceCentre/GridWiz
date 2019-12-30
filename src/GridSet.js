@@ -19,7 +19,7 @@ export default class GridSet {
         }
       })
     }))
-    return await importFromBuffer(data, path.basename(fn))
+    return await this.importFromBuffer(data, path.basename(fn))
   }
   async importFromBuffer (data, filename) {
     let fnprefix = filename + '/'
@@ -62,7 +62,7 @@ export default class GridSet {
       parser.on('opentag', (node) => {
         if (node.name == 'ENTRY') {
           ientry = {
-            static_file: node.attributes.STATICFILE,
+            static_file: node.attributes.STATICFILE.trim(),
             dynamic_files: [],
           }
           if (node.isSelfClosing) {
@@ -81,7 +81,7 @@ export default class GridSet {
           ientry = null
         } else if (name == 'DYNAMICFILES' && !!idynfiles) {
           if (!!ientry) {
-            ientry.dynamic_files = idynfiles
+            ientry.dynamic_files = idynfiles.map((a) => a.trim())
           }
           idynfiles = null
         } else if (name = 'FILE' && typeof ifilestr == 'string') {
