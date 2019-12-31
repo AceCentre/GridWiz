@@ -70,6 +70,13 @@
   import * as path from 'path'
   import * as fs from 'fs'
 
+// code for this function is from pasco/js/core.js
+function fs_friendly_name (s) {
+  return s.replace(/^[a-z]{1,10}\:\/\//i,"").replace(/\?.*$/,"")
+    .replace(/[ \(\)\[\]\*\#\@\!\$\%\^\&\+\=\/\\:]/g, '_')
+    .replace(/[\r\n\t]/g, '');
+}
+
   export default {
     name: 'main-page',
     props: [],
@@ -219,7 +226,7 @@
         // export it
         let res = await remote.dialog.showSaveDialog({
           title: 'export gridset',
-          defaultPath: 'output.gridset',
+          defaultPath: fs_friendly_name(this.searchQuery || 'output') + '.gridset',
         })
         if (res.canceled) {
           return
