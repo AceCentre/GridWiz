@@ -1,8 +1,8 @@
 {
-  "name": "gridwiz",
+  "name": "GridWiz",
   "version": "0.0.1",
-  "author": "Hossein Amin <hossein@aminbros.com>",
-  "description": "",
+  "author": "Ace Centre <enquiries@acecentre.org.uk>",
+  "description": "A Simple app to make your own personalised GridSets for developing access skills",
   "license": null,
   "main": "./dist/electron/main.js",
   "scripts": {
@@ -20,8 +20,14 @@
     "postinstall": ""
   },
   "build": {
-    "productName": "gridwiz",
+    "productName": "GridWiz",
     "appId": "uk.org.acecentre.gridwiz",
+    "win": {
+    "publisherName": "Ace Centre"
+    },
+    "nsis": {
+      "menuCategory": true
+    },
     "directories": {
       "output": "build"
     },
