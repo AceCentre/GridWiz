@@ -19,7 +19,7 @@
         </div>
       </div>
     </div>
-    <div v-if="!!targetEntry" v-bind:class="{'fill-height v-box step-two':1,hidden:currentStep!=2}">
+    <div v-bind:class="{'fill-height v-box step-two':1,hidden:currentStep!=2}">
       <div class="v-box main-header">
         <div class="h-box flex-center-items padded-box">
           <div v-if="showBack" class="padded-box">
@@ -34,15 +34,15 @@
           </div>
         </div>
         <div class="h-box flex-center-items padded-box">
-          <p>Select {{targetEntry.dynamic_files.length}} images and set Its order, Then hit export to generate a gridset.</p>
+          <p>Select {{targetEntriesDynamicFileCount}} images and set Its order, Then hit export to generate a gridset.</p>
           <div class="flex-grow"></div>
           <!--
           <div class="paded-box">
-            {{targetEntry.dynamic_files.length - selectedImages.length}} remained
+            {{targetEntriesDynamicFileCount - selectedImages.length}} remained
           </div>
           -->
           <div class="padded-box">
-            <button type="button" v-bind:class="{'pure-button button-primary':1,'l-disabled':selectedImages.length != targetEntry.dynamic_files.length}" v-on:click="didClickExport" title="Export">Export</button>
+            <button type="button" v-bind:class="{'pure-button button-primary':1,'l-disabled':selectedImages.length != targetEntriesDynamicFileCount}" v-on:click="didClickExport" title="Export">Export</button>
           </div>
         </div>
       </div>
@@ -87,7 +87,7 @@ function fs_friendly_name (s) {
       images: [],
       selectedImages: [],
       entries: [],
-      targetEntry: null,
+      targetEntries: [],
       currentStep: 0,
       _noMore: false,
       _loading: false,
@@ -95,18 +95,29 @@ function fs_friendly_name (s) {
     }),
     mounted () {
       (async () => {
-        // load default gridwiz
-        this._gridset = new GridSet()
-        let fn = path.join(__static, 'GridWiz-Default.gridset')
-        await this._gridset.importFromFile(fn)
-        this.entries = this._gridset.entries
-        let entry = this.entries.find((a) => a.static_file == 'Grids\\cause1\\grid.xml')
-        if (entry != null) {
-          this.targetEntry = entry
-          this.currentStep = 2
-        } else {
+        try {
+          // load default gridwiz
+          this._gridset = new GridSet()
+          let fn = path.join(__static, 'GridWiz-Default.gridset')
+          await this._gridset.importFromFile(fn)
+          this.entries = this._gridset.entries
+          let default_targets = [
+            'Grids\\cause1\\grid.xml',
+            'Grids\\NHgrid 5\\grid.xml',
+            'Grids\\NHgrid 6\\grid.xml',
+            'Grids\\NHgrid 7\\grid.xml',
+          ]
+          this.targetEntries = this.entries.filter((a) => default_targets.indexOf(a.static_file) != -1)
+          if (this.targetEntries.length > 0) {
+            // default gridset found, show second step with no back option
+            this.currentStep = 2
+          } else {
+            throw new Error('Could not find any target entry')
+          }
+        } catch (err) {
+          console.warn('load default failed', err)
+          this.targetEntries = []
           this._gridset = null
-          this.entries = null
           this.currentStep = 1
           this.showBack = true
         }
@@ -138,7 +149,7 @@ function fs_friendly_name (s) {
           alert('entry has no dynamic files!')
           return
         }
-        this.targetEntry = entry
+        this.targetEntries = [entry]
         this.currentStep = 2
       },
       didClickStepBack () {
@@ -169,7 +180,7 @@ function fs_friendly_name (s) {
       didClickImagePanel (image) {
         let idx = this.selectedImages.indexOf(image)
         if (idx == -1) {
-          if (this.targetEntry.dynamic_files.length - this.selectedImages.length == 0) {
+          if (this.targetEntriesDynamicFileCount - this.selectedImages.length == 0) {
             return
           }
           image.imageNumber = (this.selectedImages.length+1)+''
@@ -182,8 +193,12 @@ function fs_friendly_name (s) {
         image.imageNumber = event.target.value
       },
       async didClickExport () {
-        if (this.selectedImages.length != this.targetEntry.dynamic_files.length) {
-          alert(`You should select ${this.targetEntry.dynamic_files.length} image(s)`)
+        if (this.targetEntries.length == 0) {
+          alert('no target entries!')
+          return
+        }
+        if (this.selectedImages.length != this.targetEntriesDynamicFileCount) {
+          alert(`You should select ${this.targetEntriesDynamicFileCount} image(s)`)
           return
         }
         let images = this.selectedImages.sort((a, b) => {
@@ -203,7 +218,7 @@ function fs_friendly_name (s) {
         let checksum_cache = {}
         let basedir = path.dirname(this._gridset.filemap.name)
         this._gridset.clearModifyMemory()
-        for (let i = 0; i < this.targetEntry.dynamic_files.length; i++) {
+        for (let target_index = 0, tioffset = 0, i = 0; i < images.length; i++) {
           /*
             DynamicFiles of target grid should be sample images
             that will get replaced according to their checksum,
@@ -212,9 +227,17 @@ function fs_friendly_name (s) {
             Image data is taken from matched selected image tag
           */
           let imageurl = images[i].url
-          let dynfn = this.targetEntry.dynamic_files[i].replace(/\\/g, '/')
-          let targetfn = (basedir + '/' + dynfn)
-                .replace(/^(\.\/|\/)/, '')
+          let target_entry = this.targetEntries[target_index]
+          if (i >= tioffset + target_entry.dynamic_files.length) {
+            target_index += 1
+            if (target_index >= this.targetEntries.length) {
+              break // no more target image, should never be true
+            }
+            tioffset = i
+            target_entry = this.targetEntries[target_index]
+          }
+          let dynfn = target_entry.dynamic_files[i - tioffset].replace(/\\/g, '/')
+          let targetfn = (basedir + '/' + dynfn).replace(/^(\.\/|\/)/, '')
           let checksum = await this._gridset.getFileChecksum(targetfn)
           let subimgs = Array.from(document.querySelectorAll('img'))
               .filter((a) => a.src == imageurl)
@@ -283,6 +306,13 @@ function fs_friendly_name (s) {
       },
     },
     computed: {
+      targetEntriesDynamicFileCount () {
+        let len = 0
+        for (let entry of this.targetEntries) {
+          len += entry.dynamic_files.length
+        }
+        return len
+      },
     },
   }
 </script>
