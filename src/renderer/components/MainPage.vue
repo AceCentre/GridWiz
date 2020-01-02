@@ -172,6 +172,7 @@ function fs_friendly_name (s) {
           if (this.targetEntry.dynamic_files.length - this.selectedImages.length == 0) {
             return
           }
+          image.imageNumber = (this.selectedImages.length+1)+''
           this.selectedImages.push(image)
         } else {
           this.selectedImages.splice(idx, 1)
@@ -212,7 +213,7 @@ function fs_friendly_name (s) {
           */
           let imageurl = images[i].url
           let dynfn = this.targetEntry.dynamic_files[i].replace(/\\/g, '/')
-          let targetfn = path.join(basedir, dynfn)
+          let targetfn = (basedir + '/' + dynfn)
                 .replace(/^(\.\/|\/)/, '')
           let checksum = await this._gridset.getFileChecksum(targetfn)
           let subimgs = Array.from(document.querySelectorAll('img'))
