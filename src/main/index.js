@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, Menu } from 'electron'
 
 /**
  * Set `__static` path to static files in production
@@ -26,12 +26,48 @@ function createWindow () {
       webSecurity: false, // not needed
     },
   })
+  
+  const shell = require('electron').shell;
+  var menu = Menu.buildFromTemplate([
+    {
+      label: 'Help and Support',
+      submenu: [
+        {
+          label:'Send feedback',
+          click() { 
+              shell.openExternal('https://acecentre.org.uk/contact/')
+          }
+        },
+        {
+          label: 'View current open issues',
+          click(){
+              shell.openExternal('https://github.com/AceCentre/GridWiz/issues')
+          }
+        },
+        {
+            label:'Donate to Ace Centre',
+            click: () => {
+              shell.openExternal('https://donate.justgiving.com/donation-amount?uri=aHR0cHM6Ly9kb25hdGUtYXBpLmp1c3RnaXZpbmcuY29tL2FwaS9kb25hdGlvbnMvOGRiMTExMzhmODRjNDk5MWIzMjgzZWJlMWJhM2FjYjc=')
+            }
+        }]
+      },
+      {    
+              label: 'Quit',
+              click: () => {
+                  app.quit();
+              }
+          }
+      ])
+   Menu.setApplicationMenu(menu); 
 
   mainWindow.loadURL(winURL)
 
   mainWindow.on('closed', () => {
     mainWindow = null
   })
+
+    
+    
 }
 
 app.on('ready', createWindow)

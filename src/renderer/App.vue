@@ -6,7 +6,7 @@
 
 <script>
   export default {
-    name: 'gridwiz'
+    name: 'GridWiz'
   }
 </script>
 
