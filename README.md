@@ -1,6 +1,11 @@
-# gridwiz
+# GridWiz
 
-> 
+[![GridWiz Demo](https://img.youtube.com/vi/5Rl4R7MWNW8/0.jpg)](https://www.youtube.com/watch?v=5Rl4R7MWNW8)
+
+GridWiz is a simple app to make a custom Grid 3 Gridset with images from Google images. After installing it, Double click on the app, Enter your search term and select 7 images. When done hit export and import the file into the Grid 3.  The Gridset can then be modified as you wish – adding sounds etc if you need to.
+
+[Download and install it here](http://github.com/acecentre/GridWiz/releases/tag/0.0.1)
+
 
 #### Build Setup
 
