@@ -88,7 +88,7 @@
     "electron-debug": "^1.5.0",
     "electron-devtools-installer": "^2.2.4",
     "file-loader": "^1.1.11",
-    "g-i-s": "^2.1.3",
+    "g-i-s": "^2.1.5",
     "html-webpack-plugin": "^3.2.0",
     "inject-loader": "^4.0.1",
     "jszip": "^3.2.2",
