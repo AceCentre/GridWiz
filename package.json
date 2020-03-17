@@ -23,6 +23,7 @@
     "productName": "GridWiz",
     "appId": "uk.org.acecentre.gridwiz",
     "win": {
+      "publisherName": "Ace Centre",
       "icon": "build/icons/icon.ico"
     },
     "nsis": {
