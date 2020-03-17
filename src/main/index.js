@@ -44,6 +44,11 @@ function createWindow () {
               shell.openExternal('https://github.com/AceCentre/GridWiz/issues')
           }
         },
+        {label:'Debug',
+      click: () => {
+      mainWindow.webContents.openDevTools();
+      }
+    },
         {
             label:'Donate to Ace Centre',
             click: () => {
