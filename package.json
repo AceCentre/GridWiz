@@ -65,7 +65,7 @@
   },
   "devDependencies": {
     "@fortawesome/fontawesome-free": "^5.11.2",
-    "ajv": "^6.5.0",
+    "ajv": "^6.12.3",
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.4",
     "babel-plugin-istanbul": "^4.1.6",
