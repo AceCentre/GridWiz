@@ -90,7 +90,7 @@
     "g-i-s": "^2.1.5",
     "html-webpack-plugin": "^3.2.0",
     "inject-loader": "^4.0.1",
-    "jszip": "^3.2.2",
+    "jszip": "^3.7.0",
     "karma": "^2.0.2",
     "karma-chai": "^0.1.0",
     "karma-coverage": "^1.1.2",
